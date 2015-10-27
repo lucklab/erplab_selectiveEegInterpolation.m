@@ -1,4 +1,4 @@
-% eeg_interp() - interpolate data channels
+% erplab_eeg_interp() - interpolate data channels
 %
 % Usage: EEGOUT = eeg_interp(EEG, badchans, method);
 %
@@ -37,7 +37,7 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function EEG = eeg_interp(ORIEEG, bad_elec, method)
+function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
 
     if nargin < 2
         help eeg_interp;
@@ -45,7 +45,7 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
     end;
     EEG = ORIEEG;
     
-    if nargin < 3
+    if nargin < 4
         disp('Using spherical interpolation');
         method = 'spherical';
     end;
@@ -63,7 +63,7 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
         lab1 = { bad_elec.labels };
         tmpchanlocs = EEG.chanlocs;
         lab2 = { tmpchanlocs.labels };
-        [tmp tmpchan] = setdiff_bc( lab2, lab1);
+        [~, tmpchan] = setdiff_bc( lab2, lab1);
         tmpchan = sort(tmpchan);
         if ~isempty(tmpchan)
             newchanlocs = [];
@@ -84,28 +84,28 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
         lab1 = { bad_elec.labels };
         tmpchanlocs = EEG.chanlocs;
         lab2 = { tmpchanlocs.labels };
-        [tmp badchans] = setdiff_bc( lab1, lab2);
+        [~, badchans] = setdiff_bc( lab1, lab2);
         fprintf('Interpolating %d channels...\n', length(badchans));
         if length(badchans) == 0, return; end;
         goodchans      = sort(setdiff(1:length(bad_elec), badchans));
        
         % re-order good channels
         % ----------------------
-        [tmp1 tmp2 neworder] = intersect_bc( lab1, lab2 );
-        [tmp1 ordertmp2] = sort(tmp2);
+        [~, tmp2, neworder] = intersect_bc( lab1, lab2 );
+        [~, ordertmp2] = sort(tmp2);
         neworder = neworder(ordertmp2);
         EEG.data = EEG.data(neworder, :, :);
 
         % looking at channels for ICA
         % ---------------------------
-        %[tmp sorti] = sort(neworder);
+        %[~, sorti] = sort(neworder);
         %{ EEG.chanlocs(EEG.icachansind).labels; bad_elec(goodchans(sorti(EEG.icachansind))).labels }
         
         % update EEG dataset (add blank channels)
         % ---------------------------------------
         if ~isempty(EEG.icasphere)
             
-            [tmp sorti] = sort(neworder);
+            [~, sorti] = sort(neworder);
             EEG.icachansind = sorti(EEG.icachansind);
             EEG.icachansind = goodchans(EEG.icachansind);
             EEG.chaninfo.icachansind = EEG.icachansind;
@@ -143,10 +143,15 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
 
     % find non-empty good channels
     % ----------------------------
-    origoodchans = goodchans;
-    chanlocs     = EEG.chanlocs;
+    origoodchans  = goodchans;
+    chanlocs      = EEG.chanlocs;
     nonemptychans = find(~cellfun('isempty', { chanlocs.theta }));
-    [tmp indgood ] = intersect_bc(goodchans, nonemptychans);
+    
+    %% Remove ignored channels from interpolation computation 
+    nonemptychans = setdiff_bc(nonemptychans, ignored_elec);
+    
+    %%
+    [~, indgood ] = intersect_bc(goodchans, nonemptychans);
     goodchans = goodchans( sort(indgood) );
     datachans = getdatachans(goodchans,badchans);
     badchans  = intersect_bc(badchans, nonemptychans);
@@ -175,10 +180,10 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
         zbad = zbad./rad;
         
         EEG.data = reshape(EEG.data, EEG.nbchan, EEG.pnts*EEG.trials);
-        %[tmp1 tmp2 tmp3 tmpchans] = spheric_spline_old( xelec, yelec, zelec, EEG.data(goodchans,1));
+        %[~, tmp2, tmp3 tmpchans] = spheric_spline_old( xelec, yelec, zelec, EEG.data(goodchans,1));
         %max(tmpchans(:,1)), std(tmpchans(:,1)), 
-        %[tmp1 tmp2 tmp3 EEG.data(badchans,:)] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, EEG.data(goodchans,:));
-        [tmp1 tmp2 tmp3 badchansdata] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, EEG.data(datachans,:));
+        %[~, tmp2, tmp3 EEG.data(badchans,:)] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, EEG.data(goodchans,:));
+        [~, ~, ~, badchansdata] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, EEG.data(datachans,:));
         %max(EEG.data(goodchans,1)), std(EEG.data(goodchans,1))
         %max(EEG.data(badchans,1)), std(EEG.data(badchans,1))
         EEG.data = reshape(EEG.data, EEG.nbchan, EEG.pnts, EEG.trials);
@@ -192,7 +197,7 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
         pnts = size(EEG.data,2)*size(EEG.data,3);
         zgood = [1:pnts];
         zgood = repmat(zgood, [length(xgood) 1]);    
-        zgood = reshape(zgood,prod(size(zgood)),1);
+        zgood = reshape(zgood,prod(size(zgood)),1); %#ok<*PSIZE>
         xgood = repmat(xgood, [1 pnts]); xgood = reshape(xgood,prod(size(xgood)),1);
         ygood = repmat(ygood, [1 pnts]); ygood = reshape(ygood,prod(size(ygood)),1);
         tmpdata = reshape(EEG.data, prod(size(EEG.data)),1);
@@ -242,7 +247,7 @@ function EEG = eeg_interp(ORIEEG, bad_elec, method)
 
 % get data channels
 % -----------------
-function datachans = getdatachans(goodchans, badchans);
+function datachans = getdatachans(goodchans, badchans)
       datachans = goodchans;
       badchans  = sort(badchans);
       for index = length(badchans):-1:1
@@ -252,7 +257,7 @@ function datachans = getdatachans(goodchans, badchans);
 % -----------------
 % spherical splines
 % -----------------
-function [x, y, z, Res] = spheric_spline_old( xelec, yelec, zelec, values);
+function [x, y, z, Res] = spheric_spline_old( xelec, yelec, zelec, values) %#ok<*DEFNU>
 
 SPHERERES = 20;
 [x,y,z] = sphere(SPHERERES);
