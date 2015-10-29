@@ -1,7 +1,6 @@
 %% Test script
-function [eeg_out] = test_script()
+function [] = test_script()
 try
-    clear all; clc;
     eeglab;
     
     %% Load test data set
@@ -17,7 +16,7 @@ try
         , 'winlength', 20);
     
     %% Process data
-    ignored_chans     = [3 4 5 6 7 8 9 10 11 12 13  15 16 17];
+    ignored_chans     = [3 4 5 6 7 8 9 10 11 12    14  15 16];
     badchans          = [1 2];
     %     eeg_out_original  = eeg_interp(eeg_in, badchans);
     eeg_out_selective = erplab_eeg_interp(eeg_in, badchans, ignored_chans);
