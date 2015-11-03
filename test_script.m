@@ -16,10 +16,10 @@ try
         , 'winlength', 20);
     
     %% Process data
-    ignored_chans     = [3 4 5 6 7 8 9 10 11 12    14  15 16];
-    badchans          = [1 2];
+    ignored_chans     = [4 5 6 7 8 9 10 11 13 14 15 16];
+    badchans          = [1 2 3];
     %     eeg_out_original  = eeg_interp(eeg_in, badchans);
-    eeg_out_selective = erplab_eeg_interp(eeg_in, badchans, ignored_chans);
+    eeg_out_selective = erplab_selective_eeg_interp(eeg_in, badchans, ignored_chans);
     
     % Error occurs when you ignore all the channels
     %     ignored_chans     = [3 4 5 6 7 8 9 10 11 12 13 14 15 ];
@@ -29,11 +29,10 @@ try
     
     
     %% View/Confirm output data
-        eegplot(eeg_out_selective.data ...
-            , 'srate'    , eeg_out_selective.srate ...
-            , 'events'   , eeg_out_selective.event ...
-            , 'winlength', 20);
-    %
+    eegplot(eeg_out_selective.data ...
+        , 'srate'    , eeg_out_selective.srate ...
+        , 'events'   , eeg_out_selective.event ...
+        , 'winlength', 20);
     
     
 catch err;

@@ -1,4 +1,4 @@
-% erplab_eeg_interp() - interpolate data channels
+% erplab_selective_eeg_interp() - interpolate data channels
 %
 % Usage: EEGOUT = eeg_interp(EEG, badchans, method);
 %
@@ -37,7 +37,7 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
+function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
 
     if nargin < 2
         help eeg_interp;
@@ -55,6 +55,13 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
     if isempty(tmplocs) || isempty([tmplocs.X])
         error('Interpolation require channel location');
     end;
+    
+    
+    overlap_elec = intersect(bad_elec, ignored_elec); 
+    if ~isempty(overlap_elec)
+        error('There is overlap between the bad electrodes and the electrodes you wish to skip for interpolation.\nFix the input electrode lists to avoid this overlap of bad and ignored electrodes\n\nBad electrodes:\t\t%s\nIgnore electrodes:\t%s\nOverlapping electrodes:\t%s', num2str(bad_elec), num2str(ignored_elec), num2str(overlap_elec))
+    end;
+    
     
     if isstruct(bad_elec)
         
@@ -86,7 +93,7 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
         lab2 = { tmpchanlocs.labels };
         [~, badchans] = setdiff_bc( lab1, lab2);
         fprintf('Interpolating %d channels...\n', length(badchans));
-        if length(badchans) == 0, return; end;
+        if isempty(badchans), return; end;
         goodchans      = sort(setdiff(1:length(bad_elec), badchans));
        
         % re-order good channels
@@ -157,7 +164,7 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
     if isempty(badchans), return; end;
   
     
-    %% Print feedback to command window
+    %% Error check: Less than 2 good channels for interpolation
     if length(goodchans) < 2
         feedback_str = [ ...
             sprintf('Cannot interpolate \t%.2d channels:\t', length(badchans)) ...
@@ -166,13 +173,13 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
             sprintf('using only\t\t%.2d channel(s):\t', length(goodchans)) ...
             sprintf(' %2.2d', goodchans) ...
             '\n' ...
-            sprintf('skipping\t\t%.2d channels:\t', length(ignored_elec))...
+            sprintf('skipping\t%.2d channels:\t', length(ignored_elec))...
             sprintf(' %2.2d', ignored_elec) ...
             '\n'];
         fprintf(feedback_str);
         error('Cannot interpolate with %d channels.\nEither make sure data set contains more than 2 channels \nAND that you are not ignoring too many channels', length(goodchans));
     else
-        
+        % Print feedback to command window if error check passes
         feedback_str = [ ...
             sprintf('Interpolating \t%.2d channels:\t', length(badchans)) ...
             sprintf(' %2.2d', badchans) ...
@@ -180,12 +187,18 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
             sprintf('with\t\t%.2d channels:\t', length(goodchans)) ...
             sprintf(' %2.2d', goodchans) ...
             '\n' ...
-            sprintf('skipping\t\t%.2d channels:\t', length(ignored_elec))...
+            sprintf('skipping\t%.2d channels:\t', length(ignored_elec))...
             sprintf(' %2.2d', ignored_elec) ...
             '\n'];
         fprintf(feedback_str);
     end
-
+    
+    
+    %% Warning check: Ignored bad channels
+    flatlinechans = intersect(bad_elec, ignored_elec);
+    if(~isempty(flatlinechans))
+        warning('Warning: %d channels contain no data because they are interpolated with ignored channels: %s', length(flatlinechans), int2str(flatlinechans));
+    end
     
     
     % scan data points
@@ -226,7 +239,7 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
         [xbad ,ybad]  = pol2cart([tmpbadlocs.theta],[tmpbadlocs.radius]);
         [xgood,ygood] = pol2cart([tmpgoodlocs.theta],[tmpgoodlocs.radius]);
         pnts = size(EEG.data,2)*size(EEG.data,3);
-        zgood = [1:pnts];
+        zgood = 1:pnts;
         zgood = repmat(zgood, [length(xgood) 1]);    
         zgood = reshape(zgood,prod(size(zgood)),1); %#ok<*PSIZE>
         xgood = repmat(xgood, [1 pnts]); xgood = reshape(xgood,prod(size(xgood)),1);
@@ -259,8 +272,8 @@ function EEG = erplab_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
             %end;
             tmpdata = reshape(EEG.data, size(EEG.data,1), size(EEG.data,2)*size(EEG.data,3) );
             if strcmpi(method, 'invdist'), method = 'v4'; end;
-            [Xi,Yi,badchansdata(:,t)] = griddata(ygood, xgood , double(tmpdata(datachans,t)'),...
-                                                    ybad, xbad, method); % interpolate data                                            
+            [~,~,badchansdata(:,t)] = griddata(ygood, xgood , double(tmpdata(datachans,t)'),...
+                                                    ybad, xbad, method); %#ok<GRIDD> % interpolate data                                            
         end
         fprintf('\n');
     end;
@@ -282,7 +295,7 @@ function datachans = getdatachans(goodchans, badchans)
       datachans = goodchans;
       badchans  = sort(badchans);
       for index = length(badchans):-1:1
-          datachans(find(datachans > badchans(index))) = datachans(find(datachans > badchans(index)))-1;
+          datachans(find(datachans > badchans(index))) = datachans(find(datachans > badchans(index)))-1; %#ok<FNDSB>
       end;
         
 % -----------------
@@ -292,9 +305,9 @@ function [x, y, z, Res] = spheric_spline_old( xelec, yelec, zelec, values) %#ok<
 
 SPHERERES = 20;
 [x,y,z] = sphere(SPHERERES);
-x(1:(length(x)-1)/2,:) = []; x = [ x(:)' ];
-y(1:(length(y)-1)/2,:) = []; y = [ y(:)' ];
-z(1:(length(z)-1)/2,:) = []; z = [ z(:)' ];
+x(1:(length(x)-1)/2,:) = []; x = x(:)';
+y(1:(length(y)-1)/2,:) = []; y = y(:)';
+z(1:(length(z)-1)/2,:) = []; z = z(:)';
 
 Gelec = computeg(xelec,yelec,zelec,xelec,yelec,zelec);
 Gsph  = computeg(x,y,z,xelec,yelec,zelec);
@@ -328,7 +341,7 @@ end
 Res = Res + meanvalues;
 Res = reshape(Res, length(x(:)),1);
 
-function [xbad, ybad, zbad, allres] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, values);
+function [xbad, ybad, zbad, allres] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, values)
 
 newchans = length(xbad);
 numpoints = size(values,2);
