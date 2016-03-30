@@ -3,7 +3,7 @@ Modified version of EEGLAB's EEG channel interpolation function `eeg_interp.m` t
 
 #### Inputs
 - `eeg_in`        - EEGLAB EEG data struction to interpolate
-- `badchans`      - array of channels to replace via interpolation
+- `replace_chans` - array of channels to replace via interpolation
 - `ignored_chans` - array of channels to ignore as input for interpolation 
 
 #### Outputs
