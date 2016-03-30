@@ -19,9 +19,9 @@ data_filepath = './data/';
 eeg_in = pop_loadset('filename', data_filename, 'filepath', data_filepath);
 
 %% Process data
-badchans          = [1 2 3];                        % Replace these channels via interpolation
+replace_chans     = [1 2 3];                        % Replace these channels via interpolation
 ignored_chans     = [4 5 6 7 8 9 10 11   14 15 16]; % Interpolate using electrodes 12 & 13
-eeg_out_selective = erplab_selective_eeg_interp(eeg_in, badchans, ignored_chans);
+eeg_out_selective = erplab_selective_eeg_interp(eeg_in, replace_chans, ignored_chans);
 
 
 ```
