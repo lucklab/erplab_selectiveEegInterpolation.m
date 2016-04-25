@@ -1,4 +1,4 @@
-% erplab_selective_eeg_interp() - interpolate data channels
+% erplab_selectiveEegInterpolation() - interpolate data channels
 %
 % Usage: EEGOUT = eeg_interp(EEG, badchans, method);
 %
@@ -37,7 +37,7 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, method)
+function EEG = erplab_selectiveEegInterpolation(ORIEEG, bad_elec, ignored_elec, method)
 
     if nargin < 2
         help eeg_interp;
@@ -88,11 +88,13 @@ function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, metho
         end;
         if length(EEG.chanlocs) == length(bad_elec), return; end;
         
-        lab1 = { bad_elec.labels };
-        tmpchanlocs = EEG.chanlocs;
-        lab2 = { tmpchanlocs.labels };
+        lab1          = { bad_elec.labels };
+        tmpchanlocs   = EEG.chanlocs;
+        lab2          = { tmpchanlocs.labels };
         [~, badchans] = setdiff_bc( lab1, lab2);
+        
         fprintf('Interpolating %d channels...\n', length(badchans));
+        
         if isempty(badchans), return; end;
         goodchans      = sort(setdiff(1:length(bad_elec), badchans));
        
@@ -154,6 +156,7 @@ function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, metho
     chanlocs      = EEG.chanlocs;
     nonemptychans = find(~cellfun('isempty', { chanlocs.theta }));
     
+    
     %% Remove ignored channels from interpolation computation
     nonemptychans = setdiff_bc(nonemptychans, ignored_elec);
     
@@ -207,23 +210,23 @@ function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, metho
         % get theta, rad of electrodes
         % ----------------------------
         tmpgoodlocs = EEG.chanlocs(goodchans);
-        xelec = [ tmpgoodlocs.X ];
-        yelec = [ tmpgoodlocs.Y ];
-        zelec = [ tmpgoodlocs.Z ];
-        rad = sqrt(xelec.^2+yelec.^2+zelec.^2);
-        xelec = xelec./rad;
-        yelec = yelec./rad;
-        zelec = zelec./rad;
-        tmpbadlocs = EEG.chanlocs(badchans);
-        xbad = [ tmpbadlocs.X ];
-        ybad = [ tmpbadlocs.Y ];
-        zbad = [ tmpbadlocs.Z ];
-        rad = sqrt(xbad.^2+ybad.^2+zbad.^2);
-        xbad = xbad./rad;
-        ybad = ybad./rad;
-        zbad = zbad./rad;
+        xelec       = [ tmpgoodlocs.X ];
+        yelec       = [ tmpgoodlocs.Y ];
+        zelec       = [ tmpgoodlocs.Z ];
+        rad         = sqrt(xelec.^2+yelec.^2+zelec.^2);
+        xelec       = xelec./rad;
+        yelec       = yelec./rad;
+        zelec       = zelec./rad;
+        tmpbadlocs  = EEG.chanlocs(badchans);
+        xbad        = [ tmpbadlocs.X ];
+        ybad        = [ tmpbadlocs.Y ];
+        zbad        = [ tmpbadlocs.Z ];
+        rad         = sqrt(xbad.^2+ybad.^2+zbad.^2);
+        xbad        = xbad./rad;
+        ybad        = ybad./rad;
+        zbad        = zbad./rad;
         
-        EEG.data = reshape(EEG.data, EEG.nbchan, EEG.pnts*EEG.trials);
+        EEG.data    = reshape(EEG.data, EEG.nbchan, EEG.pnts*EEG.trials);
         %[~, tmp2, tmp3 tmpchans] = spheric_spline_old( xelec, yelec, zelec, EEG.data(goodchans,1));
         %max(tmpchans(:,1)), std(tmpchans(:,1)), 
         %[~, tmp2, tmp3 EEG.data(badchans,:)] = spheric_spline( xelec, yelec, zelec, xbad, ybad, zbad, EEG.data(goodchans,:));
@@ -234,34 +237,39 @@ function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, metho
     elseif strcmpi(method, 'spacetime') % 3D interpolation, works but x10 times slower
         disp('Warning: if processing epoch data, epoch boundary are ignored...');
         disp('3-D interpolation, this can take a long (long) time...');
-        tmpgoodlocs = EEG.chanlocs(goodchans);
-        tmpbadlocs = EEG.chanlocs(badchans);
-        [xbad ,ybad]  = pol2cart([tmpbadlocs.theta],[tmpbadlocs.radius]);
-        [xgood,ygood] = pol2cart([tmpgoodlocs.theta],[tmpgoodlocs.radius]);
-        pnts = size(EEG.data,2)*size(EEG.data,3);
-        zgood = 1:pnts;
-        zgood = repmat(zgood, [length(xgood) 1]);    
-        zgood = reshape(zgood,prod(size(zgood)),1); %#ok<*PSIZE>
-        xgood = repmat(xgood, [1 pnts]); xgood = reshape(xgood,prod(size(xgood)),1);
-        ygood = repmat(ygood, [1 pnts]); ygood = reshape(ygood,prod(size(ygood)),1);
-        tmpdata = reshape(EEG.data, prod(size(EEG.data)),1);
-        zbad = 1:pnts;
-        zbad = repmat(zbad, [length(xbad) 1]);     
-        zbad = reshape(zbad,prod(size(zbad)),1);
-        xbad = repmat(xbad, [1 pnts]); xbad = reshape(xbad,prod(size(xbad)),1);
-        ybad = repmat(ybad, [1 pnts]); ybad = reshape(ybad,prod(size(ybad)),1);
-        badchansdata = griddata3(ygood, xgood, zgood, tmpdata,...
-                                              ybad, xbad, zbad, 'nearest'); % interpolate data                                            
+        
+        tmpgoodlocs     = EEG.chanlocs(goodchans);
+        tmpbadlocs      = EEG.chanlocs(badchans);
+        [xbad ,ybad]    = pol2cart([tmpbadlocs.theta],[tmpbadlocs.radius]);
+        [xgood,ygood]   = pol2cart([tmpgoodlocs.theta],[tmpgoodlocs.radius]);
+        pnts            = size(EEG.data,2)*size(EEG.data,3);
+        zgood           = 1:pnts;
+        zgood           = repmat(zgood, [length(xgood) 1]);    
+        zgood           = reshape(zgood,prod(size(zgood)),1); %#ok<*PSIZE>
+        xgood           = repmat(xgood, [1 pnts]); 
+        xgood           = reshape(xgood,prod(size(xgood)),1);
+        ygood           = repmat(ygood, [1 pnts]); 
+        ygood           = reshape(ygood,prod(size(ygood)),1);
+        tmpdata         = reshape(EEG.data, prod(size(EEG.data)),1);
+        zbad            = 1:pnts;
+        zbad            = repmat(zbad, [length(xbad) 1]);     
+        zbad            = reshape(zbad,prod(size(zbad)),1);
+        xbad            = repmat(xbad, [1 pnts]); xbad = reshape(xbad,prod(size(xbad)),1);
+        ybad            = repmat(ybad, [1 pnts]); ybad = reshape(ybad,prod(size(ybad)),1);
+        badchansdata    = griddata3(ygood, xgood, zgood, tmpdata,...
+                                    ybad, xbad, zbad, 'nearest'); % interpolate data
     else 
         % get theta, rad of electrodes
         % ----------------------------
-        tmpchanlocs = EEG.chanlocs;
-        [xbad ,ybad]  = pol2cart([tmpchanlocs( badchans).theta],[tmpchanlocs( badchans).radius]);
-        [xgood,ygood] = pol2cart([tmpchanlocs(goodchans).theta],[tmpchanlocs(goodchans).radius]);
-
+        tmpchanlocs     = EEG.chanlocs;
+        [xbad ,ybad]    = pol2cart([tmpchanlocs( badchans).theta], ...
+                                   [tmpchanlocs( badchans).radius]);
+        [xgood,ygood]   = pol2cart([tmpchanlocs(goodchans).theta], ...
+                                   [tmpchanlocs(goodchans).radius]);
+        badchansdata = zeros(length(badchans), ...
+                                    size(EEG.data,2)*size(EEG.data,3));
         fprintf('Points (/%d):', size(EEG.data,2)*size(EEG.data,3));
-        badchansdata = zeros(length(badchans), size(EEG.data,2)*size(EEG.data,3));
-        
+
         for t=1:(size(EEG.data,2)*size(EEG.data,3)) % scan data points
             if mod(t,100) == 0, fprintf('%d ', t); end;
             if mod(t,1000) == 0, fprintf('\n'); end;          
@@ -289,22 +297,22 @@ function EEG = erplab_selective_eeg_interp(ORIEEG, bad_elec, ignored_elec, metho
     EEG.nbchan = size(EEG.data,1);
     EEG = eeg_checkset(EEG);
 
+    
+    
 % get data channels
-% -----------------
 function datachans = getdatachans(goodchans, badchans)
       datachans = goodchans;
       badchans  = sort(badchans);
       for index = length(badchans):-1:1
-          datachans(find(datachans > badchans(index))) = datachans(find(datachans > badchans(index)))-1; %#ok<FNDSB>
+          datachans(find(datachans > badchans(index))) = ...
+              datachans(find(datachans > badchans(index)))-1; %#ok<FNDSB>
       end;
         
-% -----------------
-% spherical splines
-% -----------------
+%% spherical splines
 function [x, y, z, Res] = spheric_spline_old( xelec, yelec, zelec, values) %#ok<*DEFNU>
 
-SPHERERES = 20;
-[x,y,z] = sphere(SPHERERES);
+SPHERERES              = 20;
+[x,y,z]                = sphere(SPHERERES);
 x(1:(length(x)-1)/2,:) = []; x = x(:)';
 y(1:(length(y)-1)/2,:) = []; y = y(:)';
 z(1:(length(z)-1)/2,:) = []; z = z(:)';
@@ -312,10 +320,10 @@ z(1:(length(z)-1)/2,:) = []; z = z(:)';
 Gelec = computeg(xelec,yelec,zelec,xelec,yelec,zelec);
 Gsph  = computeg(x,y,z,xelec,yelec,zelec);
 
-% equations are 
+% equations are
 % Gelec*C + C0  = Potential (C unknow)
 % Sum(c_i) = 0
-% so 
+% so
 %             [c_1]
 %      *      [c_2]
 %             [c_ ]
@@ -328,7 +336,7 @@ Gsph  = computeg(x,y,z,xelec,yelec,zelec);
 
 % compute solution for parameters C
 % ---------------------------------
-meanvalues = mean(values); 
+meanvalues = mean(values);
 values = values - meanvalues; % make mean zero
 C = pinv([Gelec;ones(1,length(Gelec))]) * [values(:);0];
 
