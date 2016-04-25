@@ -19,7 +19,9 @@
 %     EEGOUT   - data set with bad electrode data replaced by
 %                interpolated data
 %
-% Author: Arnaud Delorme, CERCO, CNRS, Mai 2006-
+% Author: Jason Arita
+%
+% Based off of EEGLAB's eeg_interp.m
 
 % Copyright (C) Arnaud Delorme, CERCO, 2006, arno@salk.edu
 %

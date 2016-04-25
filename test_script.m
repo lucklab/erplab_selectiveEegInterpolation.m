@@ -16,15 +16,19 @@ try
         , 'winlength', 20);
     
     %% Process data
+    %     eeg_out_original  = eeg_interp(eeg_in, badchans);
+
+    % Error test: Interpolating w/ only 1 channel
     ignored_chans     = [4 5 6 7 8 9 10 11 13 14 15 16];
     badchans          = [1 2 3];
     %     eeg_out_original  = eeg_interp(eeg_in, badchans);
-    eeg_out_selective = erplab_selective_eeg_interp(eeg_in, badchans, ignored_chans);
+    eeg_out_selective = erplab_selectiveEegInterpolation(eeg_in, badchans, ignored_chans);
     
     % Error occurs when you ignore all the channels
-    %     ignored_chans     = [3 4 5 6 7 8 9 10 11 12 13 14 15 ];
-    %     ignored_chans     = [3 4 5 6 7 8 9 10 11 12 13 14 15 16];
-    %
+    ignored_chans     = [3 4 5 6 7 8 9 10 11 12 13 14 15 ];
+    ignored_chans     = [3 4 5 6 7 8 9 10 11 12 13 14 15 16];
+    eeg_out_selective = erplab_selectiveEegInterpolation(eeg_in, badchans, ignored_chans);
+    
     % Error occurs when only 1 channel is used for interpolation
     
     
