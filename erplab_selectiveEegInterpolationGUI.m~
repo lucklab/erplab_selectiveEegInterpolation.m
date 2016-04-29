@@ -22,7 +22,7 @@ function varargout = erplab_selectiveEegInterpolationGUI(varargin)
 
 % Edit the above text to modify the response to help erplab_selectiveEegInterpolationGUI
 
-% Last Modified by GUIDE v2.5 29-Apr-2016 12:10:21
+% Last Modified by GUIDE v2.5 29-Apr-2016 11:55:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -92,11 +92,12 @@ function pushbutton_interpolate_Callback(hObject, eventdata, handles)
 % Command-line feedback to user
 display('Interpolating Channels');
 
+% editboxEventCodes_Callback(hObject, eventdata, handles)
 
 % Save the input variables to output
 handles.output = {        ...
     handles.replaceChannels,   ...
-    handles.ignoreChannels,    ...
+    handles.ignoreChannnels,    ...
     handles.interpolationMethod ...
     };
 
@@ -120,6 +121,26 @@ handles.output = [];
 guidata(hObject, handles);
 uiresume(handles.gui_figure);
 
+% --- Executes when selected object changed in uipanel_interpolationMethod.
+function uipanelRounding_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uipanel_interpolationMethod 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% Set rounding input value depending on which radial button was selected
+if (hObject == handles.radiobutton_spherical)
+    handles.roundingInput = 'spherical';
+elseif (hObject == handles.radiobutton_inverseDistance)
+    handles.roundingInput = 'invdist';
+elseif (hObject == handles.radiobutton_spaceTime)
+    handles.roundingInput = 'spacetime';
+end
+
+% Save the new rounding value
+guidata(hObject,handles)
+
+
 
 
 % --------------------------------------------------------------------
@@ -131,10 +152,10 @@ function initialize_gui(fig_handle, handles, isreset)
 
 handles.replaceChannels    = '[]';
 handles.ignoreChannels     = '[]';
-handles.interpolationMethod = 'spherical';
+handles.interplationMethod = 'spherical';
  
 set(handles.editbox_replaceChannels,     'String',         num2str(handles.replaceChannels));
-set(handles.editbox_ignoreChannels,      'String',         num2str(handles.ignoreChannels));
+set(handles.editbox_ignoreChannels,      'String',         num2str(handles.timeshift));
 set(handles.uipanel_interpolationMethod, 'SelectedObject', handles.radiobutton_spherical);
 
 
@@ -195,7 +216,7 @@ function editbox_ignoreChannels_Callback(hObject, eventdata, handles)
 editString             = regexprep(get(hObject,'String'), '[\D]', ' ');
 handles.ignoreChannels = str2num(editString);  %#ok<ST2NM>
 
-% Display corrected channels back to GUI
+% Display corrected string back to GUI
 set(handles.editbox_ignoreChannels, 'String', editString);
 
 % Save the new ignore channels value
@@ -213,25 +234,3 @@ function editbox_ignoreChannels_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes when selected object is changed in uipanel_interpolationMethod.
-function uipanel_interpolationMethod_SelectionChangeFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uipanel_interpolationMethod 
-% eventdata  structure with the following fields (see UIBUTTONGROUP)
-%	EventName: string 'SelectionChanged' (read only)
-%	OldValue: handle of the previously selected object or empty if none was selected
-%	NewValue: handle of the currently selected object
-% handles    structure with handles and user data (see GUIDATA)
-
-% Set interpolation method input value depending on which radial button was selected
-if (hObject == handles.radiobutton_spherical)
-    handles.interpolationMethod = 'spherical';
-elseif (hObject == handles.radiobutton_inverseDistance)
-    handles.interpolationMethod = 'invdist';
-elseif (hObject == handles.radiobutton_spaceTime)
-    handles.interpolationMethod = 'spacetime';
-end
-
-% Save the new interpolation method value
-guidata(hObject,handles)
