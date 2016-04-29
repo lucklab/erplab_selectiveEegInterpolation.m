@@ -1,15 +1,16 @@
 % erplab_selectiveEegInterpolation() - interpolate data channels
 %
-% Usage: EEGOUT = eeg_interp(EEG, badchans, method);
+% Usage: EEG = erplab_selectiveEegInterpolation(ORIEEG, bad_elec, ignored_elec, method)
 %
 % Inputs: 
 %     EEG      - EEGLAB dataset
-%     badchans - [integer array] indices of channels to interpolate.
+%     bad_elec - [integer array] indices of channels to interpolate.
 %                For instance, these channels might be bad.
 %                [chanlocs structure] channel location structure containing
 %                either locations of channels to interpolate or a full
 %                channel structure (missing channels in the current 
 %                dataset are interpolated).
+% ignored_elec - 
 %     method   - [string] method used for interpolation (default is 'spherical').
 %                'invdist'/'v4' uses inverse distance on the scalp
 %                'spherical' uses superfast spherical interpolation. 
@@ -21,7 +22,7 @@
 %
 % Author: Jason Arita
 %
-% Based off of EEGLAB's eeg_interp.m
+% Built off of EEGLAB's eeg_interp.m by Arnoud Delorme
 
 % Copyright (C) Arnaud Delorme, CERCO, 2006, arno@salk.edu
 %
@@ -42,11 +43,12 @@
 function EEG = erplab_selectiveEegInterpolation(ORIEEG, bad_elec, ignored_elec, method)
 
     if nargin < 2
-        help eeg_interp;
+        help erplab_selectiveEegInterpolation;
         return;
     end;
     EEG = ORIEEG;
     
+    % If no method specified: Spherical interpolate default
     if nargin < 4
         disp('Using spherical interpolation');
         method = 'spherical';
@@ -58,10 +60,11 @@ function EEG = erplab_selectiveEegInterpolation(ORIEEG, bad_elec, ignored_elec, 
         error('Interpolation require channel location');
     end;
     
-    
+    % Error check: Overlapping electrode lists
     overlap_elec = intersect(bad_elec, ignored_elec); 
     if ~isempty(overlap_elec)
-        error('There is overlap between the bad electrodes and the electrodes you wish to skip for interpolation.\nFix the input electrode lists to avoid this overlap of bad and ignored electrodes\n\nBad electrodes:\t\t%s\nIgnore electrodes:\t%s\nOverlapping electrodes:\t%s', num2str(bad_elec), num2str(ignored_elec), num2str(overlap_elec))
+        error('There is overlap between the bad electrodes and the electrodes you wish to skip for interpolation.\nFix the input electrode lists to avoid this overlap of bad and ignored electrodes\n\nBad electrodes:\t\t%s\nIgnore electrodes:\t%s\nOverlapping electrodes:\t%s'...
+            , num2str(bad_elec), num2str(ignored_elec), num2str(overlap_elec))
     end;
     
     
@@ -258,7 +261,7 @@ function EEG = erplab_selectiveEegInterpolation(ORIEEG, bad_elec, ignored_elec, 
         zbad            = reshape(zbad,prod(size(zbad)),1);
         xbad            = repmat(xbad, [1 pnts]); xbad = reshape(xbad,prod(size(xbad)),1);
         ybad            = repmat(ybad, [1 pnts]); ybad = reshape(ybad,prod(size(ybad)),1);
-        badchansdata    = griddata3(ygood, xgood, zgood, tmpdata,...
+        badchansdata    = griddata(ygood, xgood, zgood, tmpdata,...
                                     ybad, xbad, zbad, 'nearest'); % interpolate data
     else 
         % get theta, rad of electrodes
