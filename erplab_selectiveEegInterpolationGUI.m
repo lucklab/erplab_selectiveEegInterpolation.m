@@ -44,7 +44,7 @@ end
 % End initialization code - DO NOT EDIT
 
 % --- Executes just before erplab_selectiveEegInterpolationGUI is made visible.
-function erplab_selectiveEegInterpolationGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function erplab_selectiveEegInterpolationGUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -81,7 +81,7 @@ pause(0.5)
 
 
 % --- Executes on button press in pushbutton_interpolate.
-function pushbutton_interpolate_Callback(hObject, eventdata, handles)
+function pushbutton_interpolate_Callback(hObject, eventdata, handles) %#ok<*DEFNU>
 % hObject    handle to pushbutton_interpolate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -123,7 +123,7 @@ uiresume(handles.gui_figure);
 
 
 % --------------------------------------------------------------------
-function initialize_gui(fig_handle, handles, isreset)
+function initialize_gui(fig_handle, handles, isreset) %#ok<*INUSD>
 % If the metricdata field is present and the pushbutton_cancel flag is false, it means
 % we are we are just re-initializing a GUI by calling it from the cmd line
 % while it is up. So, bail out as we dont want to pushbutton_cancel the data.

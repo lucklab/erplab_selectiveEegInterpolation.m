@@ -1,18 +1,18 @@
-function [EEG, commandHistory] = pop_erplabShiftEventTime( EEG, varargin )
-%POP_ERPLABSHIFTEVENTTIME In EEG data, shift the timing of user-specified event codes.
+function [EEG, commandHistory] = pop_erplabSelectiveEegInterpolation( EEG, varargin )
+%pop_erplabSelectiveEegInterpolation In EEG data, shift the timing of user-specified event codes.
 %
 % FORMAT
 %
-%    EEG = pop_erplabShiftEventTime(inEEG, eventcodes, timeshift)
+%    EEG = pop_erplabSelectiveEegInterpolation(inEEG, replaceChannels, ignoreChannels)
 %
 % INPUT:
 %
 %    EEG              EEGLAB EEG dataset
-%    eventcodes       list of event codes to shift
-%    timeshift        time in sec. If timeshift is positive, the EEG event code time-values are shifted to the right (e.g. increasing delay).
-%                       - If timeshift is negative, the event code time-values are shifted to the left (e.g decreasing delay).
-%                       - If timeshift is 0, the EEG's time values are not shifted.
-%    rounding         Type of rounding to use
+%    replaceChannels       list of event codes to shift
+%    ignoreChannels        time in sec. If ignoreChannels is positive, the EEG event code time-values are shifted to the right (e.g. increasing delay).
+%                       - If ignoreChannels is negative, the event code time-values are shifted to the left (e.g decreasing delay).
+%                       - If ignoreChannels is 0, the EEG's time values are not shifted.
+%    interpolationMethod         Type of interpolationMethod to use
 %                       - 'nearest'    (default) Round to the nearest integer          
 %                       - 'floor'      Round to nearest ingtowards positive infinity
 %                       - 'ceiling'    Round to nearest integer towards negative infinity
@@ -31,16 +31,16 @@ function [EEG, commandHistory] = pop_erplabShiftEventTime( EEG, varargin )
 %
 % EXAMPLE:
 %
-%     eventcodes = {'22', '19'};
-%     timeshift  = 0.015;
-%     rounding   = 'floor';
-%     outputEEG  = erplabShiftEventTime(inputEEG, eventcodes, timeshift, rounding);
+%     replaceChannels = {'22', '19'};
+%     ignoreChannels  = 0.015;
+%     interpolationMethod   = 'floor';
+%     outputEEG  = erplabShiftEventTime(inputEEG, replaceChannels, ignoreChannels, interpolationMethod);
 %     
 %
 % Requirements:
 %   - EEG_CHECKSET (eeglab function)
 %
-% See also eegtimeshift.m erptimeshift.m
+% See also eegignoreChannels.m erpignoreChannels.m
 %
 %
 % *** This function is part of ERPLAB Toolbox ***
@@ -54,7 +54,7 @@ commandHistory = '';
 
 % Return help if given no input
 if nargin < 1
-    help pop_erplabShiftEventTime
+    help pop_erplabSelectiveEegInterpolation
     return
 end
 
@@ -70,7 +70,7 @@ end
 if nargin==1
     
     % Input EEG error check
-    serror = erplab_eegscanner(EEG, 'pop_erplabShiftEventTime',...
+    serror = erplab_eegscanner(EEG, 'pop_erplabSelectiveEegInterpolation',...
         0, ... % 0 = do not accept md;
         0, ... % 0 = do not accept empty dataset;
         0, ... % 0 = do not accept epoched EEG;
@@ -82,15 +82,14 @@ if nargin==1
         return
     end
     
-    %     % Get previous input parameters
-    def  = erpworkingmemory('pop_erplabShiftEventTime');
+    % Get previous input parameters
+    def  = erpworkingmemory('pop_erplabSelectiveEegInterpolation');
     if isempty(def)
         def = {};
     end
     
-    
     % Call GUI
-    inputstrMat = erplabShiftEventTimeGUI(def);  % GUI
+    inputstrMat = erplab_selectiveEegInterpolationGUI(def);  % GUI
     
     % Exit when CANCEL button is pressed
     if isempty(inputstrMat) && ~strcmp(inputstrMat,'')
@@ -98,26 +97,26 @@ if nargin==1
         return;
     end
     
-    eventcodes          = inputstrMat{1};
-    timeshift           = inputstrMat{2};
-    rounding            = inputstrMat{3};
+    replaceChannels          = inputstrMat{1};
+    ignoreChannels           = inputstrMat{2};
+    interpolationMethod      = inputstrMat{3};
     %     displayFeedback     = inputstrMat{4};
     %
-    %     erpworkingmemory('pop_erplabShiftEventTime', ...
-    %         {eventcodes, timeshift, rounding, displayFeedback});
+    %     erpworkingmemory('pop_erplabSelectiveEegInterpolation', ...
+    %         {replaceChannels, ignoreChannels, interpolationMethod, displayFeedback});
     %
     
     % New output EEG name
     if length(EEG)==1
-        EEG.setname = [EEG.setname '_eventTimeshifted'];
+        EEG.setname = [EEG.setname '_interpolated'];
     end
     
     
-    [EEG, commandHistory] = pop_erplabShiftEventTime(EEG, ...
-        'Eventcodes'    , eventcodes,  ...
-        'Timeshift'     , timeshift,   ...
-        'Rounding'      , rounding,    ...
-        'History'       , 'gui');
+    [EEG, commandHistory] = pop_erplabSelectiveEegInterpolation(EEG, ...
+        'replaceChannels'    , replaceChannels,  ...
+        'ignoreChannels'     , ignoreChannels,   ...
+        'interpolationMethod', interpolationMethod,    ...
+        'History'            , 'gui');
     
     
     return
@@ -135,11 +134,11 @@ inputParameters.CaseSensitive = false;
 % Required parameters
 inputParameters.addRequired('EEG');
 % Optional named parameters (vs Positional Parameters)
-inputParameters.addParameter('Eventcodes'         , []);
-inputParameters.addParameter('Timeshift'          , 0);
-inputParameters.addParameter('Rounding'           , 'nearest');
-inputParameters.addParameter('DisplayFeedback'    , 'summary'); % old parameter for BoundaryString
-inputParameters.addParameter('History'            , 'script', @ischar); % history from scripting
+inputParameters.addParameter('replaceChannels'     , []);
+inputParameters.addParameter('ignoreChannels'      , []);
+inputParameters.addParameter('interpolationMethod' , 'spherical');
+inputParameters.addParameter('DisplayFeedback'     , 'summary'); % old parameter for BoundaryString
+inputParameters.addParameter('History'             , 'script', @ischar); % history from scripting
 
 inputParameters.parse(EEG, varargin{:});
 
@@ -166,7 +165,7 @@ inputParameters.parse(EEG, varargin{:});
 %
 skipfields  = {'EEG', 'DisplayFeedback', 'History'};
 fn          = fieldnames(inputParameters.Results);
-commandHistory         = sprintf( '%s  = pop_erplabShiftEventTime( %s ', inputname(1), inputname(1));
+commandHistory         = sprintf( '%s  = pop_erplabSelectiveEegInterpolation( %s ', inputname(1), inputname(1));
 for q=1:length(fn)
     fn2com = fn{q}; % get fieldname
     if ~ismember(fn2com, skipfields)
