@@ -1,4 +1,4 @@
-function [EEG, commandHistory] = pop_erplabSelectiveEegInterpolation( EEG, varargin )
+function [outputEEG, commandHistory] = pop_erplabSelectiveEegInterpolation( inputEEG, varargin )
 %pop_erplabSelectiveEegInterpolation In EEG data, shift the timing of user-specified event codes.
 %
 % FORMAT
@@ -60,7 +60,7 @@ end
 
 
 % Input testing
-if isobject(EEG) % eegobj
+if isobject(inputEEG) % eegobj
     whenEEGisanObject % calls a script for showing an error window
     return
 end
@@ -68,61 +68,8 @@ end
 %% Call GUI
 % When only 1 input is given the GUI is then called
 if nargin==1
-    
-    % Input EEG error check
-    serror = erplab_eegscanner(EEG, 'pop_erplabSelectiveEegInterpolation',...
-        0, ... % 0 = do not accept md;
-        0, ... % 0 = do not accept empty dataset;
-        0, ... % 0 = do not accept epoched EEG;
-        0, ... % 0 = do not accept if no event codes
-        2);    % 2 = do not care if there exists an ERPLAB EVENTLIST struct
-    
-    % Quit if there is an error with the input EEG
-    if serror
-        return
-    end
-    
-    % Get previous input parameters
-    def  = erpworkingmemory('pop_erplabSelectiveEegInterpolation');
-    if isempty(def)
-        def = {};
-    end
-    
-    % Call GUI
-    inputstrMat = erplab_selectiveEegInterpolationGUI(def);  % GUI
-    
-    % Exit when CANCEL button is pressed
-    if isempty(inputstrMat) && ~strcmp(inputstrMat,'')
-        commandHistory = 'User selected cancel';
-        return;
-    end
-    
-    replaceChannels          = inputstrMat{1};
-    ignoreChannels           = inputstrMat{2};
-    interpolationMethod      = inputstrMat{3};
-    %     displayFeedback     = inputstrMat{4};
-    %
-    %     erpworkingmemory('pop_erplabSelectiveEegInterpolation', ...
-    %         {replaceChannels, ignoreChannels, interpolationMethod, displayFeedback});
-    %
-    
-    % New output EEG name
-    if length(EEG)==1
-        EEG.setname = [EEG.setname '_interpolated'];
-    end
-    
-    
-    [EEG, commandHistory] = pop_erplabSelectiveEegInterpolation(EEG, ...
-        'replaceChannels'    , replaceChannels,  ...
-        'ignoreChannels'     , ignoreChannels,   ...
-        'interpolationMethod', interpolationMethod,    ...
-        'History'            , 'gui');
-    
-    
-    return
+    runGUI(inputEEG); 
 end
-
-
 
 
 %% Parse named input parameters (vs positional input parameters)
@@ -140,15 +87,21 @@ inputParameters.addParameter('interpolationMethod' , 'spherical');
 inputParameters.addParameter('DisplayFeedback'     , 'summary'); % old parameter for BoundaryString
 inputParameters.addParameter('History'             , 'script', @ischar); % history from scripting
 
-inputParameters.parse(EEG, varargin{:});
+inputParameters.parse(inputEEG, varargin{:});
 
 
 
 
 
 
+replaceChannels = inputParameters.Results.replaceChannels;
+ignoreChannels  = inputParameters.Results.ignoreChannels;
+interpolationMethod = inputParameters.Results.interpolationMethod;
 
-
+outputEEG = erplab_selectiveEegInterpolation(inputEEG ...
+    , replaceChannels       ...
+    , ignoreChannels        ...
+    , interpolationMethod   );
 
 
 
@@ -212,7 +165,7 @@ switch inputParameters.Results.History
         %fprintf('%%Equivalent command:\n%s\n\n', commandHistory);
         displayEquiComERP(commandHistory);
     case 'script' % from script
-        EEG = erphistory(EEG, [], commandHistory, 1);
+        inputEEG = erphistory(inputEEG, [], commandHistory, 1);
     case 'implicit'
         % implicit
     otherwise %off or none
@@ -230,4 +183,58 @@ if nf==1
 end
 return
 
+end
+
+function runGUI(EEG) 
+ % Input EEG error check
+    serror = erplab_eegscanner(EEG, 'pop_erplabSelectiveEegInterpolation',...
+        0, ... % 0 = do not accept md;
+        0, ... % 0 = do not accept empty dataset;
+        0, ... % 0 = do not accept epoched EEG;
+        0, ... % 0 = do not accept if no event codes
+        2);    % 2 = do not care if there exists an ERPLAB EVENTLIST struct
+    
+    % Quit if there is an error with the input EEG
+    if serror
+        return
+    end
+    
+    % Get previous input parameters
+    def  = erpworkingmemory('pop_erplabSelectiveEegInterpolation');
+    if isempty(def)
+        def = {};
+    end
+    
+    % Call GUI
+    inputstrMat = erplab_selectiveEegInterpolationGUI(def);  % GUI
+    
+    % Exit when CANCEL button is pressed
+    if isempty(inputstrMat) && ~strcmp(inputstrMat,'')
+        commandHistory = 'User selected cancel';
+        return;
+    end
+    
+    replaceChannels          = inputstrMat{1};
+    ignoreChannels           = inputstrMat{2};
+    interpolationMethod      = inputstrMat{3};
+    %     displayFeedback     = inputstrMat{4};
+    %
+    %     erpworkingmemory('pop_erplabSelectiveEegInterpolation', ...
+    %         {replaceChannels, ignoreChannels, interpolationMethod, displayFeedback});
+    %
+    
+    % New output EEG name
+    if length(EEG)==1
+        EEG.setname = [EEG.setname '_interpolated'];
+    end
+    
+    
+    [EEG, commandHistory] = pop_erplabSelectiveEegInterpolation(EEG, ...
+        'replaceChannels'    , replaceChannels,  ...
+        'ignoreChannels'     , ignoreChannels,   ...
+        'interpolationMethod', interpolationMethod,    ...
+        'History'            , 'gui');
+    
+    
+    return
 end
