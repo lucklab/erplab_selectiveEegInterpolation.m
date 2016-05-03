@@ -50,16 +50,17 @@ function [outputEEG, commandHistory] = pop_erplabSelectiveEegInterpolation( inpu
 % Davis, CA
 % 2009
 
-commandHistory = '';
 
-% Return help if given no input
+%% Return help if given no input
 if nargin < 1
     help pop_erplabSelectiveEegInterpolation
     return
 end
 
 
-% Input testing
+%% Error Checks
+
+% Error check: Input EEG structure
 if isobject(inputEEG) % eegobj
     whenEEGisanObject % calls a script for showing an error window
     return
@@ -93,9 +94,9 @@ inputParameters.parse(inputEEG, varargin{:});
 
 
 
-
-replaceChannels = inputParameters.Results.replaceChannels;
-ignoreChannels  = inputParameters.Results.ignoreChannels;
+%% Execute corresponding function
+replaceChannels     = inputParameters.Results.replaceChannels;
+ignoreChannels      = inputParameters.Results.ignoreChannels;
 interpolationMethod = inputParameters.Results.interpolationMethod;
 
 outputEEG = erplab_selectiveEegInterpolation(inputEEG ...
@@ -114,10 +115,12 @@ outputEEG = erplab_selectiveEegInterpolation(inputEEG ...
 
 
 
-%% Generate equivalent command (for history)
+%% Generate equivalent history command
 %
-skipfields  = {'EEG', 'DisplayFeedback', 'History'};
-fn          = fieldnames(inputParameters.Results);
+
+commandHistory  = '';
+skipfields      = {'EEG', 'DisplayFeedback', 'History'};
+fn              = fieldnames(inputParameters.Results);
 commandHistory         = sprintf( '%s  = pop_erplabSelectiveEegInterpolation( %s ', inputname(1), inputname(1));
 for q=1:length(fn)
     fn2com = fn{q}; % get fieldname
@@ -227,6 +230,7 @@ function runGUI(EEG)
     if length(EEG)==1
         EEG.setname = [EEG.setname '_interpolated'];
     end
+    
     
     
     [EEG, commandHistory] = pop_erplabSelectiveEegInterpolation(EEG, ...
