@@ -1,35 +1,35 @@
-function varargout = erplab_selectiveEegInterpolationGUI(varargin)
-% erplab_selectiveEegInterpolationGUI MATLAB code for erplab_selectiveEegInterpolationGUI.fig
-%      erplab_selectiveEegInterpolationGUI, by itself, creates a new erplab_selectiveEegInterpolationGUI or raises the existing
+function varargout = gui_erplab_selectiveEegInterpolation(varargin)
+% gui_erplab_selectiveEegInterpolation MATLAB code for gui_erplab_selectiveEegInterpolation.fig
+%      gui_erplab_selectiveEegInterpolation, by itself, creates a new gui_erplab_selectiveEegInterpolation or raises the existing
 %      singleton*.
 %
-%      H = erplab_selectiveEegInterpolationGUI returns the handle to a new erplab_selectiveEegInterpolationGUI or the handle to
+%      H = gui_erplab_selectiveEegInterpolation returns the handle to a new gui_erplab_selectiveEegInterpolation or the handle to
 %      the existing singleton*.
 %
-%      erplab_selectiveEegInterpolationGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in erplab_selectiveEegInterpolationGUI.M with the given input arguments.
+%      gui_erplab_selectiveEegInterpolation('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in gui_erplab_selectiveEegInterpolation.M with the given input arguments.
 %
-%      erplab_selectiveEegInterpolationGUI('Property','Value',...) creates a new erplab_selectiveEegInterpolationGUI or raises
+%      gui_erplab_selectiveEegInterpolation('Property','Value',...) creates a new gui_erplab_selectiveEegInterpolation or raises
 %      the existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before erplab_selectiveEegInterpolationGUI_OpeningFcn gets called.  An
+%      applied to the GUI before gui_erplab_selectiveEegInterpolation_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to erplab_selectiveEegInterpolationGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to gui_erplab_selectiveEegInterpolation_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help erplab_selectiveEegInterpolationGUI
+% Edit the above text to modify the response to help gui_erplab_selectiveEegInterpolation
 
-% Last Modified by GUIDE v2.5 29-Apr-2016 11:55:50
+% Last Modified by GUIDE v2.5 29-Apr-2016 12:10:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @erplab_selectiveEegInterpolationGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @erplab_selectiveEegInterpolationGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @gui_erplab_selectiveEegInterpolation_OpeningFcn, ...
+                   'gui_OutputFcn',  @gui_erplab_selectiveEegInterpolation_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -43,15 +43,15 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-% --- Executes just before erplab_selectiveEegInterpolationGUI is made visible.
-function erplab_selectiveEegInterpolationGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before gui_erplab_selectiveEegInterpolation is made visible.
+function gui_erplab_selectiveEegInterpolation_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to erplab_selectiveEegInterpolationGUI (see VARARGIN)
+% varargin   command line arguments to gui_erplab_selectiveEegInterpolation (see VARARGIN)
 
-% Choose default command line output for erplab_selectiveEegInterpolationGUI
+% Choose default command line output for gui_erplab_selectiveEegInterpolation
 handles.output = hObject;
 
 % Update handles structure
@@ -59,12 +59,12 @@ guidata(hObject, handles);
 
 initialize_gui(hObject, handles, false);
 
-% UIWAIT makes erplab_selectiveEegInterpolationGUI wait for user response (see UIRESUME)
+% UIWAIT makes gui_erplab_selectiveEegInterpolation wait for user response (see UIRESUME)
 uiwait(handles.gui_figure);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = erplab_selectiveEegInterpolationGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = gui_erplab_selectiveEegInterpolation_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -81,7 +81,7 @@ pause(0.5)
 
 
 % --- Executes on button press in pushbutton_interpolate.
-function pushbutton_interpolate_Callback(hObject, eventdata, handles)
+function pushbutton_interpolate_Callback(hObject, eventdata, handles) %#ok<*DEFNU>
 % hObject    handle to pushbutton_interpolate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -92,12 +92,11 @@ function pushbutton_interpolate_Callback(hObject, eventdata, handles)
 % Command-line feedback to user
 display('Interpolating Channels');
 
-% editboxEventCodes_Callback(hObject, eventdata, handles)
 
 % Save the input variables to output
 handles.output = {        ...
     handles.replaceChannels,   ...
-    handles.ignoreChannnels,    ...
+    handles.ignoreChannels,    ...
     handles.interpolationMethod ...
     };
 
@@ -121,30 +120,10 @@ handles.output = [];
 guidata(hObject, handles);
 uiresume(handles.gui_figure);
 
-% --- Executes when selected object changed in uipanel_interpolationMethod.
-function uipanelRounding_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uipanel_interpolationMethod 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% Set rounding input value depending on which radial button was selected
-if (hObject == handles.radiobutton_spherical)
-    handles.roundingInput = 'spherical';
-elseif (hObject == handles.radiobutton_inverseDistance)
-    handles.roundingInput = 'invdist';
-elseif (hObject == handles.radiobutton_spaceTime)
-    handles.roundingInput = 'spacetime';
-end
-
-% Save the new rounding value
-guidata(hObject,handles)
-
-
 
 
 % --------------------------------------------------------------------
-function initialize_gui(fig_handle, handles, isreset)
+function initialize_gui(fig_handle, handles, isreset) %#ok<*INUSD>
 % If the metricdata field is present and the pushbutton_cancel flag is false, it means
 % we are we are just re-initializing a GUI by calling it from the cmd line
 % while it is up. So, bail out as we dont want to pushbutton_cancel the data.
@@ -152,10 +131,10 @@ function initialize_gui(fig_handle, handles, isreset)
 
 handles.replaceChannels    = '[]';
 handles.ignoreChannels     = '[]';
-handles.interplationMethod = 'spherical';
+handles.interpolationMethod = 'spherical';
  
 set(handles.editbox_replaceChannels,     'String',         num2str(handles.replaceChannels));
-set(handles.editbox_ignoreChannels,      'String',         num2str(handles.timeshift));
+set(handles.editbox_ignoreChannels,      'String',         num2str(handles.ignoreChannels));
 set(handles.uipanel_interpolationMethod, 'SelectedObject', handles.radiobutton_spherical);
 
 
@@ -216,7 +195,7 @@ function editbox_ignoreChannels_Callback(hObject, eventdata, handles)
 editString             = regexprep(get(hObject,'String'), '[\D]', ' ');
 handles.ignoreChannels = str2num(editString);  %#ok<ST2NM>
 
-% Display corrected string back to GUI
+% Display corrected channels back to GUI
 set(handles.editbox_ignoreChannels, 'String', editString);
 
 % Save the new ignore channels value
@@ -234,3 +213,25 @@ function editbox_ignoreChannels_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes when selected object is changed in uipanel_interpolationMethod.
+function uipanel_interpolationMethod_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uipanel_interpolationMethod 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+
+% Set interpolation method input value depending on which radial button was selected
+if (hObject == handles.radiobutton_spherical)
+    handles.interpolationMethod = 'spherical';
+elseif (hObject == handles.radiobutton_inverseDistance)
+    handles.interpolationMethod = 'invdist';
+elseif (hObject == handles.radiobutton_spaceTime)
+    handles.interpolationMethod = 'spacetime';
+end
+
+% Save the new interpolation method value
+guidata(hObject,handles)
